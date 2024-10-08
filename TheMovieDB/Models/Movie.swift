@@ -5,23 +5,44 @@
 //  Created by Rafael Afonso on 4/10/24.
 //
 
-import Foundation
+import SwiftUI
+import SwiftData
 
 struct Movies: Codable, Equatable {
-    let results: [Movie]
+    var results: [Movie]
 }
 
-struct Movie: Codable, Hashable, Identifiable, Equatable {
+struct Cast: Codable, Hashable {
+    let name: String
+}
+
+struct Crew: Codable, Hashable {
+    let name: String
+    let job: String
+}
+
+struct MovieCredits: Codable, Hashable {
+    var id: Int
+    var cast: [Cast]
+    var crew: [Crew]
+}
+
+struct Movie: Codable, Identifiable, Equatable {
 
     private enum CodingKeys: String, CodingKey {
-        case id, title, poster = "poster_path", releaseDate = "release_date", overview
+        case id, title, poster = "poster_path", releaseDate = "release_date", overview, director, cast, rating = "vote_average", votes = "vote_count"
     }
 
-    let id: Int
-    let title: String
-    let poster: URL?
-    let releaseDate: String
-    let overview: String
+    var id: Int
+    var title: String
+    var poster: URL?
+    var releaseDate: String
+    var overview: String
+
+    var director: String?
+    var cast: [Cast]?
+    var rating: Float?
+    var votes: Int?
 
     init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -30,17 +51,17 @@ struct Movie: Codable, Hashable, Identifiable, Equatable {
         self.releaseDate = try container.decode(String.self, forKey: .releaseDate)
         self.overview = try container.decode(String.self, forKey: .overview)
 
-        let poster = try container.decodeIfPresent(String.self, forKey: .poster) ?? "" //rafa: mejorar esto (con un placeholder si no hay poster)
+        let poster = try container.decodeIfPresent(String.self, forKey: .poster) ?? "" //to improve this with placeholder when no poster
         self.poster = URL(string: "https://image.tmdb.org/t/p/w500\(poster)")
+
+        // details
+        self.director = try container.decodeIfPresent(String.self, forKey: .director)
+        self.cast = try container.decodeIfPresent([Cast].self, forKey: .cast)
+        self.rating = try container.decodeIfPresent(Float.self, forKey: .rating)
+        self.votes = try container.decodeIfPresent(Int.self, forKey: .votes)
     }
 
-    init(id: Int, title: String, poster: String, releaseDate: String, overview: String) {
-
-        let posterURL = URL(string: "https://image.tmdb.org/t/p/w500\(poster)")
-        self.id = id
-        self.title = title
-        self.poster = posterURL
-        self.releaseDate = releaseDate
-        self.overview = overview
+    static func == (lhs: Movie, rhs: Movie) -> Bool {
+        return lhs.id == rhs.id
     }
 }

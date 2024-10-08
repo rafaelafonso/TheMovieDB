@@ -7,32 +7,32 @@
 
 import Foundation
 
-public enum MovieEndpoint: String {
-    case fetchPopularMovies = "/movie/popular"
-    case fetchMovie = "/movie"
-}
-
 class NetworkManager {
     static let shared = NetworkManager()
     let baseURLString: String = "https://api.themoviedb.org/3"
 
-    func getRequest(_ endpoint: MovieEndpoint, id: Int? = nil, completion: @escaping (Result<Data, Error>) -> Void) {
+    func getRequest(_ endpoint: MovieEndpoint, params: [String: CustomStringConvertible] = [:], completion: @escaping (Result<Data, Error>) -> Void) {
 
-        var urlString: String = baseURLString.appending(endpoint.rawValue)
-        if let id = id {
-            urlString.append("/\(id)")
-        }
-        if let apiKey = Environment.apiKey {
-            urlString.append("?api_key=\(apiKey)")
+        let urlString: String = baseURLString.appending(endpoint.apiEndpoint())
+
+        guard var url = URL(string: urlString) else { return }
+        if var components = URLComponents(url: url, resolvingAgainstBaseURL: false) {
+            components.queryItems = params.map { URLQueryItem(name: $0.key, value: $0.value.description) }
+            if let apiKey = ApiEnvironment.apiKey {
+                components.queryItems?.append(URLQueryItem(name: "api_key", value: apiKey))
+            }
+            if let composedUrl = components.url {
+                url = composedUrl
+            }
         }
 
-        guard let url = URL(string: urlString) else { return }
+        print(">url: \(url)")
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
 
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             guard let httpResponse = response as? HTTPURLResponse else { return }
-            guard let data = data, let responseString = String(data: data, encoding: .utf8) else { return }
+            guard let data = data, let _ = String(data: data, encoding: .utf8) else { return }
 
             if let error = error {
                 print(">Error: \(error)")
