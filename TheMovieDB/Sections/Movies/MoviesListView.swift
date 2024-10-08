@@ -18,31 +18,51 @@ struct MoviesListView: View {
 
     let columns = [GridItem(.adaptive(minimum: 200))]
 
+    @State private var searchText: String = ""
+
+    var filteredMovies: [Movie] {
+        if let movies = viewModel.movies {
+            if searchText.isEmpty {
+                return movies.results
+            } else {
+                return movies.results.filter { $0.title.localizedCaseInsensitiveContains(searchText) }
+            }
+        } else {
+            return []
+        }
+    }
+
     var body: some View {
         NavigationStack {
             VStack {
-                if let movies = viewModel.movies {
-                    ScrollView {
-                        LazyVGrid(columns: columns, spacing: 12) {
-                            ForEach(Array(movies.results.enumerated()), id: \.offset) { index, movie in
-                                MovieCardView(movie: movie)
-                                    .onTapGesture {
-                                        self.selectedMovie = movie
-                                        self.showDetailsView = true
-                                    }
-                                    .onDisappear {
-                                        if index == Int(movies.results.count - 5) {
-                                            Task {
-                                                viewModel.page += 1
-                                                await viewModel.fetchMovies()
-                                            }
+                ScrollView {
+                    LazyVGrid(columns: columns, spacing: 12) {
+                        ForEach(Array(filteredMovies.enumerated()), id: \.offset) { index, movie in
+                            MovieCardView(movie: movie)
+                                .onTapGesture {
+                                    self.selectedMovie = movie
+                                    self.showDetailsView = true
+                                }
+                        }
+                        .searchable(text: $searchText, prompt: "Search movie")
+
+                        GeometryReader { geometry in
+                            Color.clear
+                                .onAppear {
+                                    let offsetY = geometry.frame(in: .global).maxY
+                                    let height = UIScreen.main.bounds.height
+                                    if offsetY < height * 1.2 {
+                                        Task {
+                                            viewModel.page += 1
+                                            await viewModel.fetchMovies()
                                         }
                                     }
-                            }
+                                }
                         }
+                        .frame(height: 20)
                     }
-                    .padding(.top)
                 }
+                .padding(.top)
             }
             .navigationTitle(Text("Popular Movies"))
             .navigationDestination(isPresented: $showDetailsView) {
