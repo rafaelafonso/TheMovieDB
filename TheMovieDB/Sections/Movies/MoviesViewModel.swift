@@ -9,6 +9,7 @@ import SwiftUI
 
 class MoviesViewModel: ObservableObject {
     @Published var movies: Movies? = nil
+    @Published var genres: [Genre]? = nil
     @Published var movieCredits: MovieCredits? = nil
     @Published var director: String? = nil
     @Published var page: Int = 1
@@ -56,6 +57,18 @@ class MoviesViewModel: ObservableObject {
                 self.director = self.fetchDirector(from: movieCredits.crew)
             case .failure(_):
                 print("> error")
+            }
+        }
+    }
+
+    func fetchGenres() async {
+        print(">VM: fetching genres")
+        MovieService().fetchGenres { result in
+            switch result {
+            case .success(let genres):
+                self.genres = genres
+            case .failure(_):
+                print("> error fetching genres")
             }
         }
     }

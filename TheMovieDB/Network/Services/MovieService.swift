@@ -18,6 +18,30 @@ class MovieError: Error {
 struct MovieService {
 
     ///
+    /// fetchGenres
+    /// - Fetch list of genres.
+    ///
+    func fetchGenres(completion: @escaping (Result<[Genre], Error>) -> Void) {
+
+        NetworkManager.shared.getRequest(.fetchGenres) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let data):
+                    do {
+                        let genres = try JSONDecoder().decode(Genres.self, from: data)
+                        completion(.success(genres.genres))
+                    } catch {
+                        print(">error decoding genres: \(error.localizedDescription)")
+                        completion(.failure(MovieError(message: error.localizedDescription)))
+                    }
+                case .failure(let error):
+                    completion(.failure(MovieError(message: error.localizedDescription)))
+                }
+            }
+        }
+    }
+
+    ///
     /// fetchMovies
     /// - Fetch popular movies.
     ///

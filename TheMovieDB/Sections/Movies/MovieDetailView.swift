@@ -115,6 +115,7 @@ private extension MovieDetailView {
     }
 }
 
+
 #Preview {
 //    MovieDetailView(viewModel: MoviesViewModel(), movie: Movie(id: 533535, title: "Deadpool & Wolverine", poster: "/8cdWjvZQUExUUTzyp4t6EDMubfO.jpg", releaseDate: "2024-07-24", overview: "A listless Wade Wilson toils away in civilian life with his days as the morally flexible mercenary, Deadpool, behind him. But when his homeworld faces an existential threat, Wade must reluctantly suit-up again with an even more reluctant Wolverine.", cast: [Cast(name: "Pedrito"), Cast(name: "Miguelito"), Cast(name: "Juanita")]))
 

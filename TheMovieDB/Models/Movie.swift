@@ -30,7 +30,7 @@ struct MovieCredits: Codable, Hashable {
 struct Movie: Codable, Identifiable, Equatable {
 
     private enum CodingKeys: String, CodingKey {
-        case id, title, poster = "poster_path", releaseDate = "release_date", overview, director, cast, rating = "vote_average", votes = "vote_count"
+        case id, title, poster = "poster_path", releaseDate = "release_date", overview, genres = "genre_ids", director, cast, rating = "vote_average", votes = "vote_count"
     }
 
     var id: Int
@@ -38,6 +38,7 @@ struct Movie: Codable, Identifiable, Equatable {
     var poster: URL?
     var releaseDate: String
     var overview: String
+    var genres: [Int]
 
     var director: String?
     var cast: [Cast]?
@@ -53,6 +54,7 @@ struct Movie: Codable, Identifiable, Equatable {
 
         let poster = try container.decodeIfPresent(String.self, forKey: .poster) ?? "" //to improve this with placeholder when no poster
         self.poster = URL(string: "https://image.tmdb.org/t/p/w500\(poster)")
+        self.genres = try container.decode([Int].self, forKey: .genres)
 
         // details
         self.director = try container.decodeIfPresent(String.self, forKey: .director)
