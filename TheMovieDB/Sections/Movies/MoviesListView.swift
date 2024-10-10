@@ -11,8 +11,9 @@ import SwiftData
 struct MoviesListView: View {
 
     @Environment(\.modelContext) private var modelContext
-
+    @StateObject var networkStatus: NetworkStatus = NetworkStatus()
     @StateObject var viewModel: MoviesViewModel = MoviesViewModel()
+
     @State private var showDetailsView: Bool = false
     @State private var selectedMovie: Movie?
 
@@ -26,32 +27,47 @@ struct MoviesListView: View {
     @State private var selectedRating: Int?
     var ratings: [Int] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
-    let columns = [GridItem(.adaptive(minimum: 200))]
+    let columns = [GridItem()]
 
     @State private var searchText: String = ""
 
-    var filteredMovies: [Movie] {
+    @Query var favoriteMovies: [FavoriteMovie]
+    @State private var showReconnectionCounter: Int = 0
+    @State private var showReconnectionAlert: Bool = false
 
-        if let movies = viewModel.movies {
-            var tempMovies = movies
-            if let selectedRating = selectedRating {
-                tempMovies.results = tempMovies.results.filter { $0.rating ?? 0.0 >= Float(selectedRating) }
-            }
+    private var filteredMovies: [Movie] {
 
-            if let selectedGenre = selectedGenre {
-                tempMovies.results = tempMovies.results.filter { $0.genres.contains(selectedGenre.id) }
+        // offline
+        if !networkStatus.isConnected {
+            var tempMovies: [Movie] = []
+            for favoriteMovie in favoriteMovies {
+                tempMovies.append(Movie(id: favoriteMovie.id, title: favoriteMovie.title, releaseDate: favoriteMovie.releaseDate, overview: favoriteMovie.overview, genres: favoriteMovie.genres, director: favoriteMovie.director, cast: favoriteMovie.cast, rating: favoriteMovie.rating, votes: favoriteMovie.votes))
             }
+            return tempMovies
+        }
+        // online
+        else {
+            if let movies = viewModel.movies {
+                var tempMovies = movies
+                if let selectedRating = selectedRating {
+                    tempMovies.results = tempMovies.results.filter { $0.rating ?? 0.0 >= Float(selectedRating) }
+                }
 
-            if let selectedYear = selectedYear {
-                tempMovies.results = tempMovies.results.filter { $0.releaseDate.contains("\(selectedYear)") }
-            }
+                if let selectedGenre = selectedGenre {
+                    tempMovies.results = tempMovies.results.filter { $0.genres.contains(selectedGenre.id) }
+                }
 
-            if !searchText.isEmpty {
-                tempMovies.results = tempMovies.results.filter { $0.title.localizedCaseInsensitiveContains(searchText) }
+                if let selectedYear = selectedYear {
+                    tempMovies.results = tempMovies.results.filter { $0.releaseDate.contains("\(selectedYear)") }
+                }
+
+                if !searchText.isEmpty {
+                    tempMovies.results = tempMovies.results.filter { $0.title.localizedCaseInsensitiveContains(searchText) }
+                }
+                return tempMovies.results
+            } else {
+                return []
             }
-            return tempMovies.results
-        } else {
-            return []
         }
     }
 
@@ -94,6 +110,15 @@ struct MoviesListView: View {
                     MovieDetailView(viewModel: viewModel, movie: movie)                        
                 }
             }
+            .onChange(of: networkStatus.isConnected) { oldValue, newValue in
+                if !oldValue && newValue {
+                    self.showReconnectionCounter += 1
+                    if showReconnectionCounter > 1 {
+                        self.showReconnectionAlert.toggle()
+                    }
+                }
+            }
+            .alert("Internet is back!", isPresented: $showReconnectionAlert) {}
         }
     }
 }

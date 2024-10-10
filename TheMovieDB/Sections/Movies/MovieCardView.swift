@@ -12,7 +12,7 @@ struct MovieCardView: View {
 
     var body: some View {
 
-        HStack(alignment: .top, spacing: 4) {
+        HStack(alignment: .top, spacing: 20) {
             VStack(alignment: .leading, spacing: 8) {
                 AsyncImage(url: movie.poster) { image in
                     image.image?
@@ -25,7 +25,6 @@ struct MovieCardView: View {
                     .font(.caption)
             }
 
-            Spacer()
             VStack(alignment: .leading, spacing: 8) {
                 Text(movie.title)
                     .font(.title3)
@@ -34,6 +33,8 @@ struct MovieCardView: View {
                 Text(movie.overview)
                     .font(.footnote)
             }
+
+            Spacer()
         }
         .padding(12)
         .background {

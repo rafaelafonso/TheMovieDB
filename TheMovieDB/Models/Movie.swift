@@ -63,6 +63,16 @@ struct Movie: Codable, Identifiable, Equatable {
         self.votes = try container.decodeIfPresent(Int.self, forKey: .votes)
     }
 
+    init(id: Int, title: String, releaseDate: String, overview: String, genres: [Int], director: String?, cast: [Cast]?, rating: Float?, votes: Int?) {
+        self.id = id
+        self.title = title
+        self.releaseDate = releaseDate
+        self.overview = overview
+        self.genres = genres
+        self.director = director
+        self.cast = cast
+    }
+
     static func == (lhs: Movie, rhs: Movie) -> Bool {
         return lhs.id == rhs.id
     }

@@ -15,17 +15,19 @@ class FavoriteMovie {
     var poster: URL? = nil
     var releaseDate: String = ""
     var overview: String = ""
+    var genres: [Int] = []
     var director: String? = nil
     var cast: [Cast]? = nil
     var rating: Float? = nil
     var votes: Int? = nil
 
-    init(id: Int, title: String, poster: URL?, releaseDate: String, overview: String, director: String?, cast: [Cast]?, rating: Float?, votes: Int?) {
+    init(id: Int, title: String, poster: URL?, releaseDate: String, overview: String, genres: [Int], director: String?, cast: [Cast]?, rating: Float?, votes: Int?) {
         self.id = id
         self.title = title
         self.poster = poster
         self.releaseDate = releaseDate
         self.overview = overview
+        self.genres = genres
         self.director = director
         self.cast = cast
         self.rating = rating

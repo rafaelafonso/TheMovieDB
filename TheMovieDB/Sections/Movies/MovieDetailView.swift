@@ -5,8 +5,8 @@
 //  Created by Rafael Afonso on 7/10/24.
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct MovieDetailView: View {
 
@@ -19,8 +19,15 @@ struct MovieDetailView: View {
     var body: some View {
 
         ScrollView {
-            VStack {
-                HStack(alignment: .top, spacing: 4) {
+            VStack(spacing: 20) {
+                HStack(alignment: .top, spacing: 20) {
+                    AsyncImage(url: movie.poster) { image in
+                        image.image?
+                            .resizable()
+                            .frame(width: 180, height: 240)
+                            .scaledToFit()
+                            .cornerRadius(8)
+                    }
                     VStack(alignment: .leading) {
                         infoSection(title: "Director", content: viewModel.director ?? "")
                         infoSection(title: "Released on", content: movie.releaseDate)
@@ -29,14 +36,8 @@ struct MovieDetailView: View {
                     }
 
                     Spacer()
-                    AsyncImage(url: movie.poster) { image in
-                        image.image?
-                            .resizable()
-                            .frame(width: 180, height: 240)
-                            .scaledToFit()
-                            .cornerRadius(8)
-                    }
                 }
+
                 VStack(alignment: .leading, spacing: 8) {
                     infoSection(title: "Synopsis", content: movie.overview)
 
@@ -55,8 +56,8 @@ struct MovieDetailView: View {
                 }
                 Spacer()
             }
+            .padding()
         }
-        .padding()
         .navigationTitle(movie.title)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -94,7 +95,7 @@ private extension MovieDetailView {
         self.isFavorite.toggle()
 
         if isFavorite {
-            let favoriteMovie = FavoriteMovie(id: movie.id, title: movie.title, poster: movie.poster, releaseDate: movie.releaseDate, overview: movie.overview, director: movie.director, cast: movie.cast, rating: movie.rating, votes: movie.votes)
+            let favoriteMovie = FavoriteMovie(id: movie.id, title: movie.title, poster: movie.poster, releaseDate: movie.releaseDate, overview: movie.overview, genres: movie.genres, director: movie.director, cast: movie.cast, rating: movie.rating, votes: movie.votes)
             modelContext.insert(favoriteMovie)
         } else {
             if let index = favorites.firstIndex(where: { $0.id == movie.id }) {
